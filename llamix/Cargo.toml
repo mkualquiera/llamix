@@ -8,3 +8,5 @@ rustflags = ["-C", "target-feature=+crt-static"]
    
 
 [dependencies]
+ansi_term = "0.12.1"
+json = "0.12.4"

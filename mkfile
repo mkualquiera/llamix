@@ -31,14 +31,42 @@ llamix/target/x86_64-unknown-linux-musl/release/llamix: ^llamix/src llamix/Cargo
 $clean-llamix:
 	rm -rf llamix/target
 
+# == BUSYBOX STUFF ==
+
+busybox-1.36.1.tar.bz2:
+	wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
+
+busybox-1.36.1: busybox-1.36.1.tar.bz2
+	tar xf busybox-1.36.1.tar.bz2
+
+busybox-1.36.1/.config: busybox-1.36.1
+	cp busybox-config busybox-1.36.1/.config
+
+# Utils for quality of life
+
+busybox-config: busybox-1.36.1/.config
+	cp busybox-1.36.1/.config busybox-config
+
+$busybox-menuconfig:
+	make -C busybox-1.36.1 menuconfig
+	cp busybox-1.36.1/.config busybox-config
+
+$clean-busybox:
+	rm -rf busybox-1.36.1 busybox-1.36.1.tar.bz2
+
+busybox-1.36.1/busybox: busybox-1.36.1/.config busybox-1.36.1
+	cd busybox-1.36.1 && make -j8
+
 # == ISO STUFF ==
 
-bootable_iso: llamix/target/x86_64-unknown-linux-musl/release/llamix linux-6.3.1/arch/x86/boot/bzImage ^workspace
+bootable_iso: busybox-1.36.1/busybox llamix/target/x86_64-unknown-linux-musl/release/llamix linux-6.3.1/arch/x86/boot/bzImage ^workspace
 	rm -rf bootable_iso
 	mkdir -p bootable_iso/bin
 	cp -a workspace/. bootable_iso
 	cp linux-6.3.1/arch/x86/boot/bzImage bootable_iso/boot/bzImage
 	cp llamix/target/x86_64-unknown-linux-musl/release/llamix bootable_iso/bin/llamix
+	cp busybox-1.36.1/busybox bootable_iso/bin/busybox
+	mkdir bootable_iso/proc
 
 bootable_iso.iso: bootable_iso
 	grub-mkrescue -o bootable_iso.iso bootable_iso

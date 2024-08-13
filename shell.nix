@@ -1,21 +1,31 @@
+let
+  nixpkgs-unstable = builtins.fetchTarball https://github.com/NixOS/nixpkgs/archive/nixpkgs-unstable.tar.gz;
+  mozillaOverlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
+  nixpkgs = import nixpkgs-unstable { overlays = [ mozillaOverlay ]; };
+  rust = (nixpkgs.rustChannelOf { channel = "stable"; }).rust.override {
+    targets = [ "x86_64-unknown-linux-musl" ];
+  };
+in
 { pkgs ? import <nixpkgs> {
    config={
       allowUnfree=true;
       cudaSupport=true;
       packageOverrides = pkgs: {
-         ollama = pkgs.ollama.override {
-            acceleration = "cuda";
-         };
          unstable = import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {
           config.allowUnfree = true;
-        };
+          config.packageOverrides = pkgs: {
+            ollama = pkgs.ollama.override {
+              acceleration = "cuda";
+            };
+          };
+        }; 
       };
    };
 } }:
 
 pkgs.mkShell {
    buildInputs = with pkgs; [
-      ollama
+      unstable.ollama
       cudaPackages.cudatoolkit
       gcc
       grub2
@@ -29,7 +39,8 @@ pkgs.mkShell {
       libelf
       ncurses.dev
       xorriso
-      rustup
+      rust
+      glibc
    ]  ;
    nativeBuildInputs = with pkgs; [
       pkg-config
@@ -37,6 +48,5 @@ pkgs.mkShell {
    shellHook = ''
    # add to PATH
    export PATH="$HOME/.cargo/bin:$PATH"
-   rustup target add x86_64-unknown-linux-musl
    '';
 }
