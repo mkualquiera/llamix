@@ -66,7 +66,6 @@ bootable_iso: busybox-1.36.1/busybox llamix/target/x86_64-unknown-linux-musl/rel
 	cp linux-6.3.1/arch/x86/boot/bzImage bootable_iso/boot/bzImage
 	cp llamix/target/x86_64-unknown-linux-musl/release/llamix bootable_iso/bin/llamix
 	cp busybox-1.36.1/busybox bootable_iso/bin/busybox
-	mkdir bootable_iso/proc
 
 bootable_iso.iso: bootable_iso
 	grub-mkrescue -o bootable_iso.iso bootable_iso

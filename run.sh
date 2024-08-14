@@ -1,1 +1,4 @@
-qemu-system-x86_64 -drive file=bootable_iso.iso,media=disk,if=virtio,format=raw -m 512 -netdev user,id=net0,hostfwd=tcp::53434-:22 -device virtio-net,netdev=net0
+qemu-system-x86_64 -drive file=bootable_iso.iso,media=disk,if=virtio,format=raw,snapshot=on \
+    -m 512 \
+    -netdev user,id=net0 \
+    -device virtio-net,netdev=net0
